@@ -1,4 +1,4 @@
-# Omarchy multi-user setup
+# Omarchy Shopfloor
 
 Run [Omarchy](https://omarchy.org) with standard users who have no admin
 rights. Omarchy assumes a single admin; this adds the missing pieces:
@@ -25,8 +25,8 @@ Requirements: Omarchy with an encrypted system partition (LUKS2), and you are
 logged in as the admin (group `wheel`).
 
 ```bash
-git clone <this repository>
-cd <this repository>
+git clone https://github.com/waltergmbh/omarchy-shopfloor.git
+cd omarchy-shopfloor
 sudo ./add-standard-user.sh <name>
 ```
 
