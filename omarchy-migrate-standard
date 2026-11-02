@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Run pending Omarchy migrations for a standard (non-sudo) user at login.
+#
+# The admin's `omarchy update` has already applied the system-wide part of
+# every migration, so privilege escalation is stubbed out as a successful
+# no-op and only the per-user part (~/.config etc.) takes effect here.
+# A migration that still fails is logged and marked done, so one migration
+# can never block the rest or leave a permanent "pending" notification.
+#
+# Log: ~/.local/state/omarchy/migrate-standard.log
+
+set -uo pipefail
+
+OMARCHY_PATH="${OMARCHY_PATH:-/usr/share/omarchy}"
+STATE_DIR="${OMARCHY_MIGRATION_STATE:-$HOME/.local/state/omarchy/migrations}"
+LOG="$(dirname "$STATE_DIR")/migrate-standard.log"
+
+# The admin is mid-update; pick the migrations up at the next login instead.
+[[ -e /var/lib/pacman/db.lck ]] && exit 0
+
+mkdir -p "$STATE_DIR"
+
+shims=$(mktemp -d)
+trap 'rm -rf "$shims"' EXIT
+for cmd in sudo pkexec run0; do
+  printf '#!/bin/sh\necho "[skipped, needs root] %s $*" >&2\ncat >/dev/null 2>&1\nexit 0\n' "$cmd" >"$shims/$cmd"
+  chmod +x "$shims/$cmd"
+done
+
+ran=0
+for file in "$OMARCHY_PATH"/migrations/*.sh; do
+  [[ -f $file ]] || continue
+  name=$(basename "$file")
+  [[ -f $STATE_DIR/$name ]] && continue
+
+  ran=1
+  {
+    printf '[%s] Running %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$name"
+    if PATH="$shims:$PATH" OMARCHY_PATH="$OMARCHY_PATH" bash -euo pipefail "$file" </dev/null; then
+      echo "Completed $name"
+    else
+      echo "Failed $name (exit code: $?), marked as done anyway"
+    fi
+  } >>"$LOG" 2>&1
+  touch "$STATE_DIR/$name"
+done
+
+# The login-time notification may have raced us; it is stale now.
+if (( ran )); then
+  omarchy-notification-dismiss "Omarchy Migrations" >/dev/null 2>&1 || true
+fi
