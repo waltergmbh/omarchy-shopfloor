@@ -34,6 +34,12 @@ if [[ ! $name =~ ^[a-z_][a-z0-9_-]{0,31}$ ]]; then
   usage >&2
   exit 1
 fi
+# Checked before anything changes, so a failure leaves no half-configured user.
+autologin=/etc/sddm.conf.d/autologin.conf
+if ! grep -q '^User=' "$autologin" 2>/dev/null; then
+  echo "Error: $autologin with a User= line not found, nothing was changed." >&2
+  exit 1
+fi
 if id "$name" &>/dev/null; then
   if id -nG "$name" | grep -qw wheel; then
     echo "Error: '$name' is an admin (wheel), not a standard user." >&2
@@ -83,7 +89,7 @@ fi
 
 "$here/install-login-theme.sh"
 
-sed -i "s/^User=.*/User=$name/" /etc/sddm.conf.d/autologin.conf
+sed -i "s/^User=.*/User=$name/" "$autologin"
 echo "SDDM autologin now set to '$name'."
 "$here/set-password.sh" "$name"
 

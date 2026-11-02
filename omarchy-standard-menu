@@ -35,6 +35,11 @@ ALLOWED = {"omarchy-theme-set-browser-policy"}
 # Menu ids to keep visible even though the scan flags them (false positives).
 KEEP = set()
 
+# Menu ids to hide even though they need no root, with the reason for --list.
+# passwd only changes the login password, so it would drift from the user's
+# disk passphrase; add-standard-user.sh changes both.
+HIDE = {"update.password.user": "passwd-skips-disk-passphrase"}
+
 COMMAND = re.compile(r"omarchy-[a-z0-9][a-z0-9-]*")
 # The AUR helpers call sudo themselves, so they count as well.
 ESCALATION = re.compile(r"(?<![\w-])(sudo|pkexec|run0|yay|paru)(?![\w-])")
@@ -90,6 +95,8 @@ def hidden_entries():
         action = entry.get("action", "")
         start = {c for c in COMMAND.findall(action) if c in names}
         reasons = privileged_commands(start, escalates, calls)
+        if menu_id in HIDE:
+            reasons.append(HIDE[menu_id])
         if reasons or ESCALATION.search(action):
             hidden[menu_id] = (entry, reasons)
     return hidden

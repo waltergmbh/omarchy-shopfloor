@@ -22,8 +22,9 @@ Omarchy.
 
 ## Install
 
-Requirements: Omarchy with an encrypted system partition (LUKS2), and you are
-logged in as the admin (group `wheel`).
+Requirements: Omarchy with an encrypted system partition (LUKS2) and SDDM autologin
+(`/etc/sddm.conf.d/autologin.conf`), and you are logged in as the admin (group
+`wheel`).
 
 ```bash
 git clone https://github.com/waltergmbh/omarchy-shopfloor.git
@@ -136,8 +137,11 @@ admin's password.
    shows in the menu or in search.
 
 Entries without a root step stay visible, also under Install, Remove, Setup and
-Update (web apps, monitors, keybindings, default browser, changing your own
-password). A submenu disappears once all its entries are hidden.
+Update (web apps, monitors, keybindings, default browser). A submenu disappears
+once all its entries are hidden.
+
+Update → Password → User is hidden as well, even though it needs no root: it only
+changes the login password, which would then drift from the disk passphrase.
 
 To see the current list and the reason for each entry:
 
@@ -152,6 +156,7 @@ the user's menu file completely; a hand-maintained file is saved once as
 To adjust it, edit these in the script:
 
 - `KEEP`: menu ids that stay visible despite a match.
+- `HIDE`: menu ids that are hidden although they need no root.
 - `ALLOWED`: privileged helpers the user may run through a sudo rule (currently
   only `omarchy-theme-set-browser-policy`).
 
@@ -212,9 +217,10 @@ stops before the login password changes. The admin's passphrase keeps working.
   the user's old one; any existing passphrase will do, not only the old one.
 - An `omarchy-user` LUKS2 token records which slot belongs to which user
   (`sudo cryptsetup luksDump <partition>`, under "Tokens").
-- Change it only through `add-standard-user.sh`. If users change their password
-  with `passwd` or through the menu, the boot prompt still expects the old one
-  and the two drift apart.
+- Change it only through `add-standard-user.sh`, which takes an admin. The menu
+  entry for changing the password is hidden, but `passwd` in a terminal still
+  works; the boot prompt then still expects the old password and the two drift
+  apart.
 - The boot prompt uses the initramfs keyboard layout. Test passwords with
   non-ASCII characters or layout-dependent keys (such as y/z) with a reboot while
   the admin's passphrase is still there as a fallback.
