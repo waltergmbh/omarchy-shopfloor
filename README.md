@@ -1,7 +1,8 @@
 # Omarchy Shopfloor
 
-Run [Omarchy](https://omarchy.org) with standard users who have no admin
-rights. Omarchy assumes a single admin; this adds the missing pieces:
+Set up [Omarchy](https://omarchy.org) for the shop floor: production machines
+used by standard users who have no admin rights. Omarchy assumes a single admin;
+this adds the missing pieces:
 
 - accounts outside `wheel`, so neither `sudo` nor polkit admin rights apply
 - Omarchy migrations that keep working for those users at login
