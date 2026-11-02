@@ -11,8 +11,8 @@ this adds the missing pieces:
 - a login screen with user switching
 - one password per user for login and for unlocking the disk at boot
 
-Developed on Omarchy 4.0.4. This is an unofficial project, not affiliated with
-Omarchy.
+Developed on Omarchy 4.0.4, now running on 4.0.6. This is an unofficial project,
+not affiliated with Omarchy.
 
 > [!WARNING]
 > These scripts change the LUKS header of your system partition, `sudoers`, the
