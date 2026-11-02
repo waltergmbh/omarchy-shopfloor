@@ -167,8 +167,31 @@ Limits:
 The stock Omarchy SDDM theme only shows a password field for the user who logged
 in last. `install-login-theme.sh` installs a copy as the theme `omarchy-users`,
 where Up/Down or Tab switches the user. Logo and background color come from the
-stock theme, so a custom logo set with `omarchy-plymouth-set` carries over; run
-the script again after changing it.
+stock theme.
+
+To use your own logo, run this as the admin, without `sudo` (`omarchy-plymouth-set`
+asks for the password itself):
+
+```bash
+omarchy-plymouth-set "#1a1b26" "#ffffff" /path/to/logo.png
+sudo ./install-login-theme.sh
+```
+
+The arguments are the background color, the color of the lock and password field,
+and the logo, a PNG file that must not be a symlink. Use a logo that is readable
+on the background color. This also changes the boot screen and rebuilds the
+initramfs, so it can take a while; the new logo shows after the next reboot.
+`install-login-theme.sh` is needed because the login screen is a copy of the stock
+theme. The color of the user name is fixed in `sddm-theme/Main.qml` and does not
+follow these arguments.
+
+To get the Omarchy logo back:
+
+```bash
+omarchy-refresh-plymouth
+omarchy-refresh-sddm
+sudo ./install-login-theme.sh
+```
 
 Back to the stock theme: `sudo ./install-login-theme.sh --remove`
 
